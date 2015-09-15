@@ -5,22 +5,18 @@
          net/url
          json)
 
-(define omdb-host "http://www.omdbapi.com/")
-
-(define title-year-url "?t=~a&y=~a&plot=full&r=json")
-(define title-url "?t=~a&plot=full&r=json")
+(define title-year-url "http://www.omdbapi.com/?t=~a&y=~a&plot=full&r=json")
+(define title-url "http://www.omdbapi.com/?t=~a&plot=full&r=json")
 
 (define (movie/title-year->json title year)
-  (call/input-url (string->url (format (string-append omdb-host
-                                                      title-year-url)
+  (call/input-url (string->url (format title-year-url
                                        title
                                        year))
                   get-pure-port
                   read-json))
 
 (define (movie/title->json title)
-  (call/input-url (string->url (format (string-append omdb-host
-                                                      title-url)
+  (call/input-url (string->url (format title-url
                                        title))
                   get-pure-port
                   read-json))
