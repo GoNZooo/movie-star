@@ -1,24 +1,47 @@
 #lang racket/base
 
-(require net/http-client
+(require racket/port
+         racket/cmdline
+         net/url
          json)
 
-(define omdb-host "www.omdbapi.com")
+(define omdb-host "http://www.omdbapi.com/")
 
 (define title-year-url "?t=~a&y=~a&plot=full&r=json")
-(define title-url "?t=~a&y=~a&plot=full&r=json")
+(define title-url "?t=~a&plot=full&r=json")
 
 (define (movie/title-year->json title year)
-  (define-values (status headers data-port)
-    (http-sendrecv omdb-host
-                   (format title-year-url
-                           title
-                           year)))
-  (read-json data-port))
+  (call/input-url (string->url (format (string-append omdb-host
+                                                      title-year-url)
+                                       title
+                                       year))
+                  get-pure-port
+                  read-json))
 
 (define (movie/title->json title)
-  (define-values (status headers data-port)
-    (http-sendrecv omdb-host
-                   (format title-url
-                           title)))
-  (read-json data-port))
+  (call/input-url (string->url (format (string-append omdb-host
+                                                      title-url)
+                                       title))
+                  get-pure-port
+                  read-json))
+
+(define (cmdline-options)
+  (define year (make-parameter -1))
+
+  (command-line
+    #:once-each
+    [("-y" "--year")
+     arg-year
+     "Set the year of the movie to search for"
+     (year (string->number arg-year))]
+    #:args (title)
+
+    (values title (year))))
+
+(module+ main
+  (define-values (title year)
+    (cmdline-options))
+
+  (if (= year -1)
+    (movie/title->json title)
+    (movie/title-year->json title year)))
