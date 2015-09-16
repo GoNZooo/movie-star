@@ -8,6 +8,7 @@
 (define title-year-url "http://www.omdbapi.com/?t=~a&y=~a&plot=full&r=json")
 (define title-url "http://www.omdbapi.com/?t=~a&plot=full&r=json")
 
+(provide movie/title-year->json)
 (define (movie/title-year->json title year)
   (call/input-url (string->url (format title-year-url
                                        title
@@ -15,6 +16,7 @@
                   get-pure-port
                   read-json))
 
+(provide movie/title->json)
 (define (movie/title->json title)
   (call/input-url (string->url (format title-url
                                        title))
