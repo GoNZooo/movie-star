@@ -8,6 +8,7 @@
 (struct actor (name filmography)
         #:transparent)
 
+(provide load-actor)
 (define (load-actor filename)
   (match (call-with-input-file filename read)
     [`(actor ,name (filmography ,films ...))
