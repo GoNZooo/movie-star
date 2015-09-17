@@ -13,11 +13,11 @@
                              (regexp-replace* " "
                                               (movie-title m)
                                               "-")))
-                     (lambda (op)
-                       (write (movie/title-year->json (movie-title m)
-                                                      (movie-year m))
-                              op))
-                     #:exists 'replace))
+    (lambda (op)
+      (write (movie/title-year->json (movie-title m)
+                                     (movie-year m))
+             op))
+    #:exists 'replace))
 
 (module+ main
   (for-each
