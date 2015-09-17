@@ -1,8 +1,10 @@
 #lang racket/base
 
 (require racket/match
+         racket/pretty
          
-         "movie.rkt")
+         "movie.rkt"
+         "myapifilmsapi.rkt")
 
 (provide (struct-out actor))
 (struct actor (name filmography)
@@ -14,6 +16,25 @@
     [`(actor ,name (filmography ,films ...))
       (actor name (map make-movie films))]))
 
+(provide write-actor)
+(define (write-actor name)
+  (define filmography
+    (map (lambda (m)
+           (list 'movie
+                 (movie-title m)
+                 (movie-year m)))
+         (get-filmography name)))
+  
+  (call-with-output-file
+    (format "/home/gonz/code/racket/movie-star/src/data/actors/~a.rktd"
+            (string-downcase (regexp-replace* " " name "-")))
+    (lambda (op)
+      (pretty-write `(actor ,name
+                            ,(cons 'filmography
+                                   filmography))
+                    op))
+    #:exists 'replace))
+
 (provide download-filmography)
 (define (download-filmography a [sleep-time 180])
   (for-each
@@ -23,6 +44,5 @@
     (actor-filmography a)))
 
 (module+ main
-  (require racket/pretty)
 
-  (pretty-print (load-actor "data/actors/robert-de-niro.rktd")))
+  (write-actor "Al Pacino"))
