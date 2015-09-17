@@ -8,8 +8,4 @@
     "/home/gonz/code/racket/movie-star/src/data/actors/robert-de-niro.rktd"))
 
 (module+ main
-  (for-each
-    (lambda (m)
-      (movie->file m)
-      (sleep 180))
-    (actor-filmography robert-de-niro)))
+  (download-filmography robert-de-niro))
