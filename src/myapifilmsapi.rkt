@@ -20,9 +20,12 @@
     ;; `with-matches` to extract the year in a reliable way
     ;; Could just substring it out, but this might fail if the API
     ;; stops prepending the (weird unicode) space
-    (with-matches
-      #px"(\\d{4})" y
-      (string->number (m 1))))
+    (if (not (< (string-length y)
+                4))
+      (with-matches
+        #px"(\\d{4})" y
+        (string->number (m 1)))
+      -1))
 
   (match (hash-ref (car (call/input-url (string->url (format my-api-film-url
                                                              person))
@@ -39,4 +42,4 @@
 (module+ main
   (require racket/pretty)
 
-  (pretty-print (get-filmography "Al Pacino")))
+  (pretty-print (get-filmography "Val Kilmer")))
