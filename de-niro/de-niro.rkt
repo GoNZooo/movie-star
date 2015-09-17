@@ -4,7 +4,7 @@
          "../src/actor.rkt"
          "../src/movie.rkt")
 
-(define robert-de-niro (load-actor "../src/data/actors/robert-de-niro.rktd"))
+(define robert-de-niro (load-actor "/home/gonz/code/racket/movie-star/src/data/actors/robert-de-niro.rktd"))
 
 (define (movie->file m)
   (call-with-output-file
