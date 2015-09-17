@@ -14,6 +14,14 @@
     [`(actor ,name (filmography ,films ...))
       (actor name (map make-movie films))]))
 
+(provide download-filmography)
+(define (download-filmography a [sleep-time 180])
+  (for-each
+    (lambda (m)
+      (movie->file m)
+      (sleep sleep-time))
+    (actor-filmography a)))
+
 (module+ main
   (require racket/pretty)
 
