@@ -2,7 +2,7 @@
 
 (require racket/match
 
-         "../src/omdbapi.rkt")
+         "omdbapi.rkt")
 
 (provide (struct-out movie))
 (struct movie (title year)
