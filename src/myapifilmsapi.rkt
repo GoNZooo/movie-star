@@ -39,7 +39,24 @@
        (movie (hash-ref m 'title)
               (year->number (hash-ref m 'year))))]))
 
+(define (cmdline-options)
+  (define name (make-parameter ""))
+  (define type (make-parameter "Actor"))
+
+  (command-line
+    #:once-each
+    [("-t" "--type")
+     arg-type
+     "Set the type to search for (director, actor, etc.)"
+     (type arg-type)]
+    #:args (name)
+
+    (values name (type))))
+
 (module+ main
   (require racket/pretty)
 
-  (pretty-print (get-filmography "Val Kilmer")))
+  (define-values (name type)
+    (cmdline-options))
+
+  (pretty-print (get-filmography name type)))
