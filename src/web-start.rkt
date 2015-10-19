@@ -1,6 +1,8 @@
 #lang racket/base
 
-(require web-server/servlet
+(require racket/string
+
+         web-server/servlet
          web-server/servlet-env
          web-server/templates
          web-server/dispatch
@@ -25,57 +27,16 @@
          ""
          filmography))
 
-(define (make-slack-payload message)
-  (jsexpr->string `#hasheq((text . ,message))))
+(define (make-actor-payload message)
+  (define message-lines (string-split message "\n"))
+  (define title (car message-lines))
 
-(define/page (actor-response actor)
-  (response/full
-    200 #"Okay"
-    (current-seconds) TEXT/HTML-MIME-TYPE
-    '()
-    `(,(~> (get-filmography actor
-                            #:type "Actor")
-           filmography->chatlist
-           (string-append actor "\n" <>)
-           make-slack-payload
-           string->bytes/utf-8))))
-
-(define/page (slack-actor-response actor)
-  (define filmography (get-filmography actor
-                                       #:type "Actor"))
-
-  (response/full
-    200 #"Okay"
-    (current-seconds) TEXT/HTML-MIME-TYPE
-    '()
-    `(,(~> (get-filmography actor
-                            #:type "Actor")
-           filmography->chatlist
-           (string-append actor "\n" <>)
-           make-slack-payload
-           string->bytes/utf-8))))
-
-(define/page (slack-cached-actor-response actor)
-  (response/full
-    200 #"Okay"
-    (current-seconds) TEXT/HTML-MIME-TYPE
-    '()
-    `(,(~> (get-filmography/cached actor
-                                   #:type "Actor")
-           filmography->chatlist
-           (string-append actor "\n" <>)
-           string->bytes/utf-8))))
-
-(define (request/actor-filmography request actor)
-  (actor-response request
-                  actor))
-
-(define (slack-request/actor-filmography/post request)
-  (define actor (extract-binding/single 'text (request-bindings request)))
-
-  (if (in-cache? actor "Actor")
-    (slack-cached-actor-response request actor)
-    (slack-actor-response request actor)))
+  (jsexpr->string
+    `#hash((text . " ")
+           (attachments . (#hash((text . ,(string-join (cdr message-lines)))
+                                 (fallback . ,(format "Filmography for ~a"
+                                                      title))
+                                 (title . ,title)))))))
 
 (define/page (slack-movie-response title)
   (response/full
@@ -90,6 +51,79 @@
   
   (slack-movie-response request title))
 
+(define/page (slack-actor-hook-response actor)
+  (response/full
+    200 #"Okay"
+    (current-seconds) TEXT/HTML-MIME-TYPE
+    '()
+    `(,(~> (get-filmography actor
+                            #:type "Actor")
+           filmography->chatlist
+           (string-append actor "\n" <>)
+           make-actor-payload
+           string->bytes/utf-8))))
+
+(define (slack-request/actor-hook/post request)
+  (define actor (~> (request-bindings request)
+                    (extract-binding/single 'text <>)
+                    (string-split <> "!actor ")
+                    car))
+  
+  (slack-actor-hook-response request actor))
+
+(define (make-movie-payload movie)
+  (define movie-title (hash-ref movie 'Title))
+  (define year (hash-ref movie 'Year))
+  (define rating (hash-ref movie 'imdbRating))
+  (define director (hash-ref movie 'Director))
+  (define actors (hash-ref movie 'Actors))
+  (define genre (hash-ref movie 'Genre))
+  (define synopsis (hash-ref movie 'Plot))
+
+  (jsexpr->string
+    `#hash((text . " ")
+           (attachments . (#hash((fields .
+                                         (#hash((title . "Year")
+                                                (value . ,year)
+                                                (short . #t))
+                                          #hash((title . "Rating")
+                                                (value . ,rating)
+                                                (short . #t))
+                                          #hash((title . "Director")
+                                                (value . ,director)
+                                                (short . #t))
+                                          #hash((title . "Actors")
+                                                (value . ,actors)
+                                                (short . #t))
+                                          #hash((title . "Genre(s)")
+                                                (value . ,genre)
+                                                (short . #t))
+                                          #hash((title . "Synopsis")
+                                                (value . ,synopsis)
+                                                (short . #f)))
+                                         )
+                                 (fallback . ,(format "Movie info for '~a'"
+                                                      movie-title))
+                                 (title . ,movie-title)))))))
+
+(define/page (slack-movie-hook-response movie)
+  (define js (movie/title->json movie))
+
+  (response/full
+    200 #"Okay"
+    (current-seconds) TEXT/HTML-MIME-TYPE
+    '()
+    `(,(~> (make-movie-payload js)
+           string->bytes/utf-8))))
+
+(define (slack-request/movie-hook/post request)
+  (define movie (~> (request-bindings request)
+                    (extract-binding/single 'text <>)
+                    (string-split <> "!movie ")
+                    car))
+  
+  (slack-movie-hook-response request movie))
+
 (define/page (ping-page)
   (response/full
     200 #"Okay"
@@ -103,14 +137,15 @@
 (define-values (github-page-dispatch github-page-url)
   (dispatch-rules
     [("ping") request/ping]
-    [("movie-star" "filmography" "actor" (string-arg))
-     request/actor-filmography]
-    [("movie-star" "slack" "filmography" "actor")
-     #:method "post"
-     slack-request/actor-filmography/post]
     [("movie-star" "slack" "movie")
      #:method "post"
-     slack-request/movie/post]))
+     slack-request/movie/post]
+    [("movie-star" "slack" "actor-hook")
+     #:method "post"
+     slack-request/actor-hook/post]
+    [("movie-star" "slack" "movie-hook")
+     #:method "post"
+     slack-request/movie-hook/post]))
 
 (serve/servlet github-page-dispatch
                #:port 8082

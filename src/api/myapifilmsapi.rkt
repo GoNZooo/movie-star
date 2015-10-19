@@ -20,7 +20,9 @@
                   read-json))
 
 (provide get-filmography)
-(define (get-filmography person #:type [type "Actor"])
+(define (get-filmography person
+                         #:type [type "Actor"]
+                         #:cache? [cache? #t])
   (define (year->number y)
     ;; The API prepends a space for the year, for some reason. Using
     ;; `with-matches` to extract the year in a reliable way
@@ -32,6 +34,10 @@
         #px"(\\d{4})" y
         (string->number (m 1)))
       -1))
+
+  (when (and (in-cache? person type)
+             cache?)
+    (get-filmography/cached person #:type type))
 
   (define js-data (person->jsexpr person #:type type))
   (write-cache person type js-data)
@@ -46,7 +52,7 @@
               (year->number (hash-ref m 'year))))]))
 
 (define (sanitize-name name)
-  (regexp-replace #px"[ ']" name ""))
+  (regexp-replace #px"[ ']" (string-downcase name) ""))
 
 (provide in-cache?)
 (define (in-cache? person type)
