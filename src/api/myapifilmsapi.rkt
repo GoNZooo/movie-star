@@ -6,12 +6,18 @@
          net/url
          json
 
-         gonz/with-matches
+         "gonz/with-matches.rkt"
          
          "movie.rkt")
 
 (define my-api-film-url
   "http://www.myapifilms.com/name?name=~a&filmography=1&format=JSON")
+
+(define (person->jsexpr person #:type [type "Actor"] [cache? #t])
+  (call/input-url (string->url (format my-api-film-url
+                                       person))
+                  get-pure-port
+                  read-json))
 
 (provide get-filmography)
 (define (get-filmography person #:type [type "Actor"])
@@ -27,10 +33,10 @@
         (string->number (m 1)))
       -1))
 
-  (match (hash-ref (car (call/input-url (string->url (format my-api-film-url
-                                                             person))
-                                        get-pure-port
-                                        read-json))
+  (define js-data (person->jsexpr person #:type type))
+  (write-cache person type js-data)
+
+  (match (hash-ref (car js-data)
                    'filmographies)
     [(list fs ... a ofs ...)
      #:when (equal? (hash-ref a 'section)
@@ -39,8 +45,27 @@
        (movie (hash-ref m 'title)
               (year->number (hash-ref m 'year))))]))
 
-(provide get-filmography/hash)
-(define (get-filmography/hash person #:type [type "Actor"])
+(define (sanitize-name name)
+  (regexp-replace #px"[ ']" name ""))
+
+(provide in-cache?)
+(define (in-cache? person type)
+  (file-exists? (build-path "cache"
+                            (format "~a_~a.cache"
+                                    type
+                                    (sanitize-name person)))))
+
+(provide write-cache)
+(define (write-cache person type filmography)
+  (call-with-output-file (build-path "cache"
+                                     (format "~a_~a.cache"
+                                             type (sanitize-name person)))
+                         (lambda (output-port)
+                           (write filmography output-port))
+                         #:exists 'replace))
+
+(provide get-filmography/cached)
+(define (get-filmography/cached person #:type [type "Actor"])
   (define (year->number y)
     ;; The API prepends a space for the year, for some reason. Using
     ;; `with-matches` to extract the year in a reliable way
@@ -53,11 +78,14 @@
         (string->number (m 1)))
       -1))
 
-  (match (hash-ref (car (call/input-url (string->url (format my-api-film-url
-                                                             person))
-                                        get-pure-port
-                                        read-json))
-                   'filmographies)
+  (match
+    (hash-ref (car (call-with-input-file
+                     (build-path "cache"
+                                 (format "~a_~a.cache"
+                                         type
+                                         (sanitize-name person)))
+                     read))
+           'filmographies)
     [(list fs ... a ofs ...)
      #:when (equal? (hash-ref a 'section)
                     type)

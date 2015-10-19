@@ -24,6 +24,19 @@
                   get-pure-port
                   read-json))
 
+(provide movie/title->description)
+(define (movie/title->description title)
+  (define js (movie/title->json title))
+  (define movie-title (hash-ref js 'Title))
+  (define year (hash-ref js 'Year))
+  (define rating (hash-ref js 'imdbRating))
+  (define director (hash-ref js 'Director))
+  (define actors (hash-ref js 'Actors))
+  (define genre (hash-ref js 'Genre))
+  (define synopsis (hash-ref js 'Plot))
+  (format "~a (~a) [~a] directed by ~a~n~a~n~a~n~a"
+          movie-title year rating director actors genre synopsis))
+
 (define (cmdline-options)
   (define year (make-parameter -1))
 
