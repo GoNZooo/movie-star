@@ -33,10 +33,14 @@
 
   (jsexpr->string
     `#hash((text . " ")
-           (attachments . (#hash((text . ,(string-join (cdr message-lines)))
-                                 (fallback . ,(format "Filmography for ~a"
-                                                      title))
-                                 (title . ,title)))))))
+           (attachments .
+                        (#hash((text . ,(string-append
+                                          (cadr message-lines)
+                                          (string-join (cddr message-lines)
+                                                       ", ")))
+                               (fallback . ,(format "Filmography for ~a"
+                                                    title))
+                               (title . ,title)))))))
 
 (define/page (slack-movie-response title)
   (response/full
