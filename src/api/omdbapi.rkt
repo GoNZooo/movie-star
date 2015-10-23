@@ -6,8 +6,8 @@
          net/url
          json)
 
-(define title-year-url "http://www.omdbapi.com/?t=~a&y=~a&plot=full&r=json")
-(define title-url "http://www.omdbapi.com/?t=~a&plot=full&r=json")
+(define title-year-url "http://www.omdbapi.com/?t=~a&y=~a&r=json")
+(define title-url "http://www.omdbapi.com/?t=~a&r=json")
 
 (provide movie/title-year->json)
 (define (movie/title-year->json title year)
