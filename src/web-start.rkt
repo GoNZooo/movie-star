@@ -122,7 +122,9 @@
   (define director (hash-ref movie 'Director))
   (define actors (hash-ref movie 'Actors))
   (define genre (hash-ref movie 'Genre))
-  (define synopsis (hash-ref movie 'Plot))
+  (define plot (hash-ref movie 'Plot))
+  (define imdb-url (string-append "http://www.imdb.com/title/"
+                                  (hash-ref movie 'imdbID)))
 
   (jsexpr->string
     `#hash((text . " ")
@@ -141,11 +143,14 @@
                                                 (short . #t))
                                           #hash((title . "Genre(s)")
                                                 (value . ,genre)
-                                                (short . #t))))
+                                                (short . #t))
+                                          #hash((title . "Plot")
+                                                (value . ,plot)
+                                                (short . #f))))
                                  (fallback . ,(format "Movie info for '~a'"
                                                       movie-title))
                                  (title . ,movie-title)
-                                 (text . ,synopsis)))))))
+                                 (title_link . ,imdb-url)))))))
 
 (define/page (slack-movie-hook-response movie)
   (define js (movie/title->json movie))
