@@ -27,7 +27,7 @@
          ""
          filmography))
 
-(define (make-actor-payload message)
+(define (make-person-payload message)
   (define message-lines (string-split message "\n"))
   (define title (car message-lines))
 
@@ -64,7 +64,7 @@
                             #:type "Actor")
            filmography->chatlist
            (string-append actor "\n" <>)
-           make-actor-payload
+           make-person-payload
            string->bytes/utf-8))))
 
 (define (slack-request/actor-hook/post request)
@@ -74,6 +74,46 @@
                     car))
   
   (slack-actor-hook-response request actor))
+
+(define/page (slack-actress-hook-response actress)
+  (response/full
+    200 #"Okay"
+    (current-seconds) TEXT/HTML-MIME-TYPE
+    '()
+    `(,(~> (get-filmography actress
+                            #:type "Actress")
+           filmography->chatlist
+           (string-append actress "\n" <>)
+           make-person-payload
+           string->bytes/utf-8))))
+
+(define (slack-request/actress-hook/post request)
+  (define actress (~> (request-bindings request)
+                    (extract-binding/single 'text <>)
+                    (string-split <> "!actress ")
+                    car))
+  
+  (slack-actress-hook-response request actress))
+
+(define/page (slack-director-hook-response director)
+  (response/full
+    200 #"Okay"
+    (current-seconds) TEXT/HTML-MIME-TYPE
+    '()
+    `(,(~> (get-filmography director
+                            #:type "Director")
+           filmography->chatlist
+           (string-append director "\n" <>)
+           make-person-payload
+           string->bytes/utf-8))))
+
+(define (slack-request/director-hook/post request)
+  (define director (~> (request-bindings request)
+                    (extract-binding/single 'text <>)
+                    (string-split <> "!director ")
+                    car))
+  
+  (slack-director-hook-response request director))
 
 (define (make-movie-payload movie)
   (define movie-title (hash-ref movie 'Title))
@@ -101,14 +141,11 @@
                                                 (short . #t))
                                           #hash((title . "Genre(s)")
                                                 (value . ,genre)
-                                                (short . #t))
-                                          #hash((title . "Synopsis")
-                                                (value . ,synopsis)
-                                                (short . #f)))
-                                         )
+                                                (short . #t))))
                                  (fallback . ,(format "Movie info for '~a'"
                                                       movie-title))
-                                 (title . ,movie-title)))))))
+                                 (title . ,movie-title)
+                                 (text . ,synopsis)))))))
 
 (define/page (slack-movie-hook-response movie)
   (define js (movie/title->json movie))
@@ -147,6 +184,12 @@
     [("movie-star" "slack" "actor-hook")
      #:method "post"
      slack-request/actor-hook/post]
+    [("movie-star" "slack" "actress-hook")
+     #:method "post"
+     slack-request/actress-hook/post]
+    [("movie-star" "slack" "director-hook")
+     #:method "post"
+     slack-request/director-hook/post]
     [("movie-star" "slack" "movie-hook")
      #:method "post"
      slack-request/movie-hook/post]))
