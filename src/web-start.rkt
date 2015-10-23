@@ -1,6 +1,9 @@
 #lang racket/base
 
 (require racket/string
+         racket/port
+
+         net/url
 
          web-server/servlet
          web-server/servlet-env
@@ -15,7 +18,9 @@
          
          "api/myapifilmsapi.rkt"
          "api/omdbapi.rkt"
-         "api/movie.rkt")
+         "api/movie.rkt"
+         
+         "api/gonz/with-matches.rkt")
 
 (define (filmography->chatlist filmography)
   (foldl (lambda (m output)
@@ -125,6 +130,25 @@
   (define plot (hash-ref movie 'Plot))
   (define imdb-url (string-append "http://www.imdb.com/title/"
                                   (hash-ref movie 'imdbID)))
+  (define imdb-poster-url (hash-ref movie 'Poster))
+  (define local-poster-path
+    (string-append "/movie-star/posters/"
+                   (with-matches #px"/(\\w)/(.*)$"
+                                 imdb-poster-url
+                                 (string-append (m 1)
+                                                (m 2)))))
+  (define poster-url (string-append "http://severnatazvezda.com"
+                                    local-poster-path))
+  (when (not (file-exists? local-poster-path))
+    (call-with-output-file
+      local-poster-path
+      (lambda (out)
+        (write-bytes (call/input-url (string->url (hash-ref movie
+                                                            'Poster))
+                                     get-pure-port
+                                     port->bytes)
+                     out))
+      #:mode 'binary))
 
   (jsexpr->string
     `#hash((text . " ")
@@ -146,11 +170,12 @@
                                                 (short . #t))
                                           #hash((title . "Plot")
                                                 (value . ,plot)
-                                                (short . #f))))
+                                                (short . #t))))
                                  (fallback . ,(format "Movie info for '~a'"
                                                       movie-title))
                                  (title . ,movie-title)
-                                 (title_link . ,imdb-url)))))))
+                                 (title_link . ,imdb-url)
+                                 (image_url . ,poster-url)))))))
 
 (define/page (slack-movie-hook-response movie)
   (define js (movie/title->json movie))
