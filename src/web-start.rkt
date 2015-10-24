@@ -1,6 +1,8 @@
 #lang racket/base
 
-(require web-server/servlet
+(require racket/string
+         
+         web-server/servlet
          web-server/servlet-env
          web-server/templates
          web-server/dispatch
