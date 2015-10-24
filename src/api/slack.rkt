@@ -32,25 +32,19 @@
 
 (provide make-movie-payload)
 (define (make-movie-payload movie)
-  (define movie-title (hash-ref movie
-                                'Title))
-  (define year (hash-ref movie
-                         'Year))
-  (define rating (hash-ref movie
-                           'imdbRating))
-  (define director (hash-ref movie
-                             'Director))
-  (define actors (hash-ref movie
-                           'Actors))
-  (define genre (hash-ref movie
-                          'Genre))
-  (define plot (hash-ref movie
-                         'Plot))
+  (define (json-ref key)
+    (hash-ref movie key))
+
+  (define movie-title (json-ref 'Title))
+  (define year (json-ref 'Year))
+  (define rating (json-ref 'imdbRating))
+  (define director (json-ref 'Director))
+  (define actors (json-ref 'Actors))
+  (define genre (json-ref 'Genre))
+  (define plot (json-ref 'Plot))
   (define imdb-url (string-append "http://www.imdb.com/title/"
-                                  (hash-ref movie
-                                            'imdbID)))
-  (define imdb-poster-url (hash-ref movie
-                                    'Poster))
+                                  (json-ref 'imdbID)))
+  (define imdb-poster-url (json-ref 'Poster))
 
   (define local-poster-path
     (string-append "/movie-star/posters/"
@@ -66,8 +60,7 @@
     (call-with-output-file
       local-poster-path
       (lambda (out)
-        (write-bytes (call/input-url (string->url (hash-ref movie
-                                                            'Poster))
+        (write-bytes (call/input-url (string->url (json-ref 'Poster))
                                      get-pure-port
                                      port->bytes)
                      out))
