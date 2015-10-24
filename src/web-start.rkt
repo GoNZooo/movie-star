@@ -1,18 +1,11 @@
 #lang racket/base
 
-(require racket/string
-         racket/port
-
-         net/url
-
-         web-server/servlet
+(require web-server/servlet
          web-server/servlet-env
          web-server/templates
          web-server/dispatch
          web-server/page
          web-server/http/bindings
-
-         json
 
          "jeapostrophe/threading-arrow.rkt"
          
@@ -22,11 +15,6 @@
          "api/movie.rkt"
          
          "api/gonz/with-matches.rkt")
-
-(define (slack-request/movie/post request)
-  (define title (extract-binding/single 'text (request-bindings request)))
-  
-  (slack-movie-response request title))
 
 (define/page (slack-actor-hook-response actor)
   (response/full

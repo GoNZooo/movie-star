@@ -1,6 +1,13 @@
 #lang racket/base
 
-(require "host-info.rkt")
+(require racket/string
+         racket/port
+         json
+         net/url
+
+         "gonz/with-matches.rkt"
+         "host-info.rkt"
+         "movie.rkt")
 
 (provide make-person-payload)
 (define (make-person-payload filmography)
@@ -16,14 +23,12 @@
                                (title . ,title)))))))
 
 (define (films->chatlist films)
-  (string-append (format "~a (~a)"
-                         (movie-title (cadr filmography))
-                         (movie-year (cadr filmography)))
-                 (string-join (map (lambda (m)
-                                     (format "~a (~a)"
-                                             (movie-title m)
-                                             (movie-year m)))
-                                   (cddr filmography)))))
+  (string-join (map (lambda (m)
+                      (format "~a (~a)"
+                              (movie-title m)
+                              (movie-year m)))
+                    films)
+               ", "))
 
 (provide make-movie-payload)
 (define (make-movie-payload movie)
