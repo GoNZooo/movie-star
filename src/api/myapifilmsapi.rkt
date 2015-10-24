@@ -47,9 +47,10 @@
         [(list fs ... a ofs ...)
          #:when (equal? (hash-ref a 'section)
                         type)
-         (for/list ([m (hash-ref a 'filmography)])
-           (movie (hash-ref m 'title)
-                  (year->number (hash-ref m 'year))))]))))
+         (cons person
+               (for/list ([m (hash-ref a 'filmography)])
+                 (movie (hash-ref m 'title)
+                        (year->number (hash-ref m 'year)))))]))))
 
 (define (sanitize-name name)
   (regexp-replace #px"[ ']" (string-downcase name) ""))
@@ -94,9 +95,10 @@
     [(list fs ... a ofs ...)
      #:when (equal? (hash-ref a 'section)
                     type)
-     (for/list ([m (hash-ref a 'filmography)])
-       (movie (hash-ref m 'title)
-              (year->number (hash-ref m 'year))))]))
+     (cons person
+           (for/list ([m (hash-ref a 'filmography)])
+             (movie (hash-ref m 'title)
+                    (year->number (hash-ref m 'year)))))]))
 
 (define (cmdline-options)
   (define name (make-parameter ""))

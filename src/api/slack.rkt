@@ -4,30 +4,26 @@
 
 (provide make-person-payload)
 (define (make-person-payload filmography)
-  (define message-lines (string-split (filmography->chatlist filmography)
-                                      "\n"))
-  (define title (car message-lines))
+  (define title (car filmography))
+  (define filmography-list (films->chatlist (cdr filmography)))
 
   (jsexpr->string
     `#hash((text . " ")
            (attachments .
-                        (#hash((text . ,(string-append
-                                          (cadr message-lines)
-                                          (string-join (cddr message-lines)
-                                                       ", ")))
+                        (#hash((text . ,filmography-list)
                                (fallback . ,(format "Filmography for ~a"
                                                     title))
                                (title . ,title)))))))
 
-(define (filmography->chatlist filmography)
-  (foldl (lambda (m output)
-           (string-append output
-                          "\n"
-                          (format "~a (~a)"
-                                  (movie-title m)
-                                  (movie-year m))))
-         ""
-         filmography))
+(define (films->chatlist films)
+  (string-append (format "~a (~a)"
+                         (movie-title (cadr filmography))
+                         (movie-year (cadr filmography)))
+                 (string-join (map (lambda (m)
+                                     (format "~a (~a)"
+                                             (movie-title m)
+                                             (movie-year m)))
+                                   (cddr filmography)))))
 
 (provide make-movie-payload)
 (define (make-movie-payload movie)

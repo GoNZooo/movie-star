@@ -35,8 +35,6 @@
     '()
     `(,(~> (get-filmography actor
                             #:type "Actor")
-           filmography->chatlist
-           (string-append actor "\n" <>)
            make-person-payload
            string->bytes/utf-8))))
 
@@ -55,8 +53,6 @@
     '()
     `(,(~> (get-filmography actress
                             #:type "Actress")
-           filmography->chatlist
-           (string-append actress "\n" <>)
            make-person-payload
            string->bytes/utf-8))))
 
@@ -75,8 +71,6 @@
     '()
     `(,(~> (get-filmography director
                             #:type "Director")
-           filmography->chatlist
-           (string-append director "\n" <>)
            make-person-payload
            string->bytes/utf-8))))
 
