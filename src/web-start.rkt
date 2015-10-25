@@ -1,7 +1,7 @@
 #lang racket/base
 
 (require racket/string
-         
+
          web-server/servlet
          web-server/servlet-env
          web-server/templates
@@ -10,12 +10,12 @@
          web-server/http/bindings
 
          "jeapostrophe/threading-arrow.rkt"
-         
+
          "api/myapifilmsapi.rkt"
          "api/omdbapi.rkt"
          "api/slack.rkt"
          "api/movie.rkt"
-         
+
          "api/gonz/with-matches.rkt")
 
 (define/page (slack-actor-hook-response actor)
@@ -33,7 +33,7 @@
                     (extract-binding/single 'text <>)
                     (string-split <> "!actor ")
                     car))
-  
+
   (slack-actor-hook-response request actor))
 
 (define/page (slack-actress-hook-response actress)
@@ -48,10 +48,10 @@
 
 (define (slack-request/actress-hook/post request)
   (define actress (~> (request-bindings request)
-                    (extract-binding/single 'text <>)
-                    (string-split <> "!actress ")
-                    car))
-  
+                      (extract-binding/single 'text <>)
+                      (string-split <> "!actress ")
+                      car))
+
   (slack-actress-hook-response request actress))
 
 (define/page (slack-director-hook-response director)
@@ -66,10 +66,10 @@
 
 (define (slack-request/director-hook/post request)
   (define director (~> (request-bindings request)
-                    (extract-binding/single 'text <>)
-                    (string-split <> "!director ")
-                    car))
-  
+                       (extract-binding/single 'text <>)
+                       (string-split <> "!director ")
+                       car))
+
   (slack-director-hook-response request director))
 
 (define/page (slack-movie-hook-response movie)
@@ -87,7 +87,7 @@
                     (extract-binding/single 'text <>)
                     (string-split <> "!movie ")
                     car))
-  
+
   (slack-movie-hook-response request movie))
 
 (define/page (ping-page)
