@@ -7,7 +7,7 @@
          json
 
          "gonz/with-matches.rkt"
-         
+
          "movie.rkt")
 
 (define my-api-film-url
@@ -44,7 +44,7 @@
     (let ([js-data (person->jsexpr person #:type type)])
       (write-cache person type js-data)
       (eprintf "Data for ~a (~a) not in cache. Downloading.~n"
-              person type)
+               person type)
 
       (match
         (hash-ref (car js-data)
@@ -96,7 +96,7 @@
     (hash-ref (car (call-with-input-file
                      (cache-path person type)
                      read))
-           'filmographies)
+              'filmographies)
     [(list fs ... a ofs ...)
      #:when (equal? (hash-ref a 'section)
                     type)
