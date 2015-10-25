@@ -37,9 +37,14 @@
 
   (if (and (in-cache? person type)
            cache?)
-    (get-filmography/cached person #:type type)
+    (begin
+      (eprintf "Reading cached data for ~a (~a).~n"
+               person type)
+      (get-filmography/cached person #:type type))
     (let ([js-data (person->jsexpr person #:type type)])
       (write-cache person type js-data)
+      (eprintf "Data for ~a (~a) not in cache. Downloading.~n"
+              person type)
 
       (match
         (hash-ref (car js-data)

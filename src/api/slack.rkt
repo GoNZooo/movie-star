@@ -35,6 +35,37 @@
   (define (json-ref key)
     (hash-ref movie key))
 
+  (define (remote-url->local-url remote-url title year)
+    (let* ([local-poster-path
+             (string-append "/movie-star/posters/"
+                            (with-matches #px"/(\\w)/(.*)$"
+                                          remote-url
+                                          (string-append (m 1)
+                                                         (m 2))))]
+           [full-url (string-append host-base-url
+                                    local-poster-path)])
+      (cond
+        [(not (file-exists? local-poster-path))
+         (eprintf "Not cached: ~a [~a (~a)]; downloading.~n"
+                  remote-url
+                  title
+                  year)
+         (call-with-output-file
+           local-poster-path
+           (lambda (out)
+             (write-bytes (call/input-url (string->url (json-ref 'Poster))
+                                          get-pure-port
+                                          port->bytes)
+                          out))
+           #:mode 'binary)
+         full-url]
+        [else
+          (eprintf "Cached: '~a' [~a (~a)].~n"
+                   remote-url
+                   title
+                   year)
+          full-url])))
+
   (define movie-title (json-ref 'Title))
   (define year (json-ref 'Year))
   (define rating (json-ref 'imdbRating))
@@ -44,27 +75,10 @@
   (define plot (json-ref 'Plot))
   (define imdb-url (string-append "http://www.imdb.com/title/"
                                   (json-ref 'imdbID)))
-  (define imdb-poster-url (json-ref 'Poster))
+  (define poster-url (remote-url->local-url (json-ref 'Poster)
+                                            movie-title
+                                            year))
 
-  (define local-poster-path
-    (string-append "/movie-star/posters/"
-                   (with-matches #px"/(\\w)/(.*)$"
-                                 imdb-poster-url
-                                 (string-append (m 1)
-                                                (m 2)))))
-
-  (define poster-url (string-append host-base-url
-                                    local-poster-path))
-
-  (when (not (file-exists? local-poster-path))
-    (call-with-output-file
-      local-poster-path
-      (lambda (out)
-        (write-bytes (call/input-url (string->url (json-ref 'Poster))
-                                     get-pure-port
-                                     port->bytes)
-                     out))
-      #:mode 'binary))
 
   (jsexpr->string
     `#hash((text . " ")
