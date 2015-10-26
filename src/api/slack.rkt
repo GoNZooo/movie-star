@@ -30,6 +30,16 @@
                     films)
                ", "))
 
+(provide parse-movie-command)
+(define (parse-movie-command msg)
+  (if (regexp-match? #px"\\(.*\\)" msg)
+    (with-matches #px"(.*)\\((\\d{4})\\)"
+                  msg
+                  (cons (m 1)
+                        (m 2)))
+    (cons msg
+          #f)))
+
 (provide make-movie-payload)
 (define (make-movie-payload movie)
   (define (json-ref key)

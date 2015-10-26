@@ -70,18 +70,25 @@
                                     car)))
 
 (define/page (slack-movie-hook-response movie)
+  (define movie-data
+    (if (cdr movie)
+      (movie/title-year->json (car movie)
+                              (cdr movie))
+      (movie/title->json (car movie))))
+
   (response/full
     200 #"Okay"
     (current-seconds) TEXT/HTML-MIME-TYPE
     '()
-    `(,(~> (make-movie-payload (movie/title->json movie))
+    `(,(~> (make-movie-payload movie-data)
            string->bytes/utf-8))))
 
 (define (slack-request/movie-hook/post request)
   (define movie (~> (request-bindings request)
                     (extract-binding/single 'text <>)
                     (string-split <> "!movie ")
-                    car))
+                    car
+                    parse-movie-command))
 
   (slack-movie-hook-response request movie))
 
