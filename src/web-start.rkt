@@ -29,12 +29,11 @@
            string->bytes/utf-8))))
 
 (define (slack-request/actor-hook/post request)
-  (define actor (~> (request-bindings request)
-                    (extract-binding/single 'text <>)
-                    (string-split <> "!actor ")
-                    car))
-
-  (slack-actor-hook-response request actor))
+  (slack-actor-hook-response request
+                             (~> (request-bindings request)
+                                 (extract-binding/single 'text <>)
+                                 (string-split <> "!actor ")
+                                 car)))
 
 (define/page (slack-actress-hook-response actress)
   (response/full
@@ -47,12 +46,11 @@
            string->bytes/utf-8))))
 
 (define (slack-request/actress-hook/post request)
-  (define actress (~> (request-bindings request)
-                      (extract-binding/single 'text <>)
-                      (string-split <> "!actress ")
-                      car))
-
-  (slack-actress-hook-response request actress))
+  (slack-actress-hook-response request
+                               (~> (request-bindings request)
+                                   (extract-binding/single 'text <>)
+                                   (string-split <> "!actress ")
+                                   car)))
 
 (define/page (slack-director-hook-response director)
   (response/full
@@ -65,21 +63,18 @@
            string->bytes/utf-8))))
 
 (define (slack-request/director-hook/post request)
-  (define director (~> (request-bindings request)
-                       (extract-binding/single 'text <>)
-                       (string-split <> "!director ")
-                       car))
-
-  (slack-director-hook-response request director))
+  (slack-director-hook-response request
+                                (~> (request-bindings request)
+                                    (extract-binding/single 'text <>)
+                                    (string-split <> "!director ")
+                                    car)))
 
 (define/page (slack-movie-hook-response movie)
-  (define js (movie/title->json movie))
-
   (response/full
     200 #"Okay"
     (current-seconds) TEXT/HTML-MIME-TYPE
     '()
-    `(,(~> (make-movie-payload js)
+    `(,(~> (make-movie-payload (movie/title->json movie))
            string->bytes/utf-8))))
 
 (define (slack-request/movie-hook/post request)
