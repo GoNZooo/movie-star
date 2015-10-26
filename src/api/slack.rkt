@@ -47,11 +47,14 @@
 
   (define (remote-url->local-url remote-url title year)
     (let* ([local-poster-path
-             (string-append "/movie-star/posters/"
-                            (with-matches #px"/(\\w)/(.*)$"
-                                          remote-url
-                                          (string-append (m 1)
-                                                         (m 2))))]
+             (if (equal? remote-url
+                         "N/A")
+               "/movie-star/posters/NA.jpg"
+               (string-append "/movie-star/posters/"
+                              (with-matches #px"/(\\w)/(.*)$"
+                                            remote-url
+                                            (string-append (m 1)
+                                                           (m 2)))))]
            [full-url (string-append host-base-url
                                     local-poster-path)])
       (cond
