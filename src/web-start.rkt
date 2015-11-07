@@ -102,7 +102,7 @@
 (define (request/ping request)
   (ping-page request))
 
-(define-values (github-page-dispatch github-page-url)
+(define-values (movie-star-dispatch movie-star-url)
   (dispatch-rules
     [("ping") request/ping]
     [("movie-star" "slack" "actor-hook")
@@ -118,7 +118,7 @@
      #:method "post"
      slack-request/movie-hook/post]))
 
-(serve/servlet github-page-dispatch
+(serve/servlet movie-star-dispatch
                #:port 8082
                #:listen-ip #f
                #:servlet-regexp #rx""
