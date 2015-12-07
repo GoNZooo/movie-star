@@ -41,19 +41,19 @@
   (define year (make-parameter -1))
 
   (command-line
-    #:once-each
-    [("-y" "--year")
-     arg-year
-     "Set the year of the movie to search for"
-     (year (string->number arg-year))]
-    #:args (title)
+   #:once-each
+   [("-y" "--year")
+    arg-year
+    "Set the year of the movie to search for"
+    (year (string->number arg-year))]
+   #:args (title)
 
-    (values title (year))))
+   (values title (year))))
 
 (module+ main
   (define-values (title year)
     (cmdline-options))
 
   (if (= year -1)
-    (movie/title->json title)
-    (movie/title-year->json title year)))
+      (movie/title->json title)
+      (movie/title-year->json title year)))
