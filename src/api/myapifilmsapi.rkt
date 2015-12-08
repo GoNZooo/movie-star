@@ -30,32 +30,32 @@
     ;; stops prepending the (weird unicode) space
     (if (not (< (string-length y)
                 4))
-      (with-matches
-        #px"(\\d{4})" y
-        (string->number (m 1)))
-      -1))
+        (with-matches
+          #px"(\\d{4})" y
+          (string->number (m 1)))
+        -1))
 
   (if (and (in-cache? person type)
            cache?)
-    (begin
-      (eprintf "Reading cached data for ~a (~a).~n"
-               person type)
-      (get-filmography/cached person #:type type))
-    (let ([js-data (person->jsexpr person #:type type)])
-      (write-cache person type js-data)
-      (eprintf "Data for ~a (~a) not in cache. Downloading.~n"
-               person type)
+      (begin
+        (eprintf "Reading cached data for ~a (~a).~n"
+                 person type)
+        (get-filmography/cached person #:type type))
+      (let ([js-data (person->jsexpr person #:type type)])
+        (write-cache person type js-data)
+        (eprintf "Data for ~a (~a) not in cache. Downloading.~n"
+                 person type)
 
-      (match
-        (hash-ref (car js-data)
-                  'filmographies)
-        [(list fs ... a ofs ...)
-         #:when (equal? (hash-ref a 'section)
-                        type)
-         (cons person
-               (for/list ([m (hash-ref a 'filmography)])
-                 (movie (hash-ref m 'title)
-                        (year->number (hash-ref m 'year)))))]))))
+        (match
+            (hash-ref (car js-data)
+                      'filmographies)
+          [(list fs ... a ofs ...)
+           #:when (equal? (hash-ref a 'section)
+                          type)
+           (cons person
+                 (for/list ([m (hash-ref a 'filmography)])
+                   (movie (hash-ref m 'title)
+                          (year->number (hash-ref m 'year)))))]))))
 
 (define (sanitize-name name)
   (regexp-replace #px"[ ']" (string-downcase name) ""))
@@ -74,9 +74,9 @@
 (provide write-cache)
 (define (write-cache person type filmography)
   (call-with-output-file (cache-path person type)
-                         (lambda (output-port)
-                           (write filmography output-port))
-                         #:exists 'replace))
+    (lambda (output-port)
+      (write filmography output-port))
+    #:exists 'replace))
 
 (provide get-filmography/cached)
 (define (get-filmography/cached person #:type [type "Actor"])
@@ -87,16 +87,16 @@
     ;; stops prepending the (weird unicode) space
     (if (not (< (string-length y)
                 4))
-      (with-matches
-        #px"(\\d{4})" y
-        (string->number (m 1)))
-      -1))
+        (with-matches
+          #px"(\\d{4})" y
+          (string->number (m 1)))
+        -1))
 
   (match
-    (hash-ref (car (call-with-input-file
-                     (cache-path person type)
-                     read))
-              'filmographies)
+      (hash-ref (car (call-with-input-file
+                       (cache-path person type)
+                       read))
+                'filmographies)
     [(list fs ... a ofs ...)
      #:when (equal? (hash-ref a 'section)
                     type)
@@ -110,14 +110,14 @@
   (define type (make-parameter "Actor"))
 
   (command-line
-    #:once-each
-    [("-t" "--type")
-     arg-type
-     "Set the type to search for (director, actor, etc.)"
-     (type arg-type)]
-    #:args (name)
+   #:once-each
+   [("-t" "--type")
+    arg-type
+    "Set the type to search for (director, actor, etc.)"
+    (type arg-type)]
+   #:args (name)
 
-    (values name (type))))
+   (values name (type))))
 
 (module+ main
   (require racket/pretty)

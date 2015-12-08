@@ -15,12 +15,12 @@
   (define filmography-list (films->chatlist (cdr filmography)))
 
   (jsexpr->string
-    `#hash((text . " ")
-           (attachments .
-                        (#hash((text . ,filmography-list)
-                               (fallback . ,(format "Filmography for ~a"
-                                                    title))
-                               (title . ,title)))))))
+   `#hash((text . " ")
+          (attachments .
+                       (#hash((text . ,filmography-list)
+                              (fallback . ,(format "Filmography for ~a"
+                                                   title))
+                              (title . ,title)))))))
 
 (define (films->chatlist films)
   (string-join (map (lambda (m)
@@ -33,12 +33,12 @@
 (provide parse-movie-command)
 (define (parse-movie-command msg)
   (if (regexp-match? #px"\\(.*\\)" msg)
-    (with-matches #px"(.*)\\((\\d{4})\\)"
-                  msg
-                  (cons (m 1)
-                        (m 2)))
-    (cons msg
-          #f)))
+      (with-matches #px"(.*)\\((\\d{4})\\)"
+        msg
+        (cons (m 1)
+              (m 2)))
+      (cons msg
+            #f)))
 
 (provide make-movie-payload)
 (define (make-movie-payload movie)
@@ -47,14 +47,14 @@
 
   (define (remote-url->local-url remote-url title year)
     (let* ([local-poster-path
-             (if (equal? remote-url
-                         "N/A")
-               "/movie-star/posters/NA.jpg"
-               (string-append "/movie-star/posters/"
-                              (with-matches #px"/(\\w)/(.*)$"
-                                            remote-url
-                                            (string-append (m 1)
-                                                           (m 2)))))]
+            (if (equal? remote-url
+                        "N/A")
+                "/movie-star/posters/NA.jpg"
+                (string-append "/movie-star/posters/"
+                               (with-matches #px"/(\\w)/(.*)$"
+                                 remote-url
+                                 (string-append (m 1)
+                                                (m 2)))))]
            [full-url (string-append host-base-url
                                     local-poster-path)])
       (cond
@@ -73,11 +73,11 @@
            #:mode 'binary)
          full-url]
         [else
-          (eprintf "Cached: '~a' [~a (~a)].~n"
-                   remote-url
-                   title
-                   year)
-          full-url])))
+         (eprintf "Cached: '~a' [~a (~a)].~n"
+                  remote-url
+                  title
+                  year)
+         full-url])))
 
   (define movie-title (json-ref 'Title))
   (define year (json-ref 'Year))
@@ -94,29 +94,29 @@
 
 
   (jsexpr->string
-    `#hash((text . " ")
-           (attachments . (#hash((fields .
-                                         (#hash((title . "Year")
-                                                (value . ,year)
-                                                (short . #t))
-                                          #hash((title . "Rating")
-                                                (value . ,rating)
-                                                (short . #t))
-                                          #hash((title . "Director")
-                                                (value . ,director)
-                                                (short . #t))
-                                          #hash((title . "Actors")
-                                                (value . ,actors)
-                                                (short . #t))
-                                          #hash((title . "Genre(s)")
-                                                (value . ,genre)
-                                                (short . #t))
-                                          #hash((title . "Plot")
-                                                (value . ,plot)
-                                                (short . #t))))
-                                 (fallback . ,(format "Movie info for '~a'"
-                                                      movie-title))
-                                 (title . ,movie-title)
-                                 (title_link . ,imdb-url)
-                                 (image_url . ,poster-url)))))))
+   `#hash((text . " ")
+          (attachments . (#hash((fields .
+                                        (#hash((title . "Year")
+                                               (value . ,year)
+                                               (short . #t))
+                                         #hash((title . "Rating")
+                                               (value . ,rating)
+                                               (short . #t))
+                                         #hash((title . "Director")
+                                               (value . ,director)
+                                               (short . #t))
+                                         #hash((title . "Actors")
+                                               (value . ,actors)
+                                               (short . #t))
+                                         #hash((title . "Genre(s)")
+                                               (value . ,genre)
+                                               (short . #t))
+                                         #hash((title . "Plot")
+                                               (value . ,plot)
+                                               (short . #t))))
+                                (fallback . ,(format "Movie info for '~a'"
+                                                     movie-title))
+                                (title . ,movie-title)
+                                (title_link . ,imdb-url)
+                                (image_url . ,poster-url)))))))
 

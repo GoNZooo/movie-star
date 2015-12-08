@@ -8,13 +8,13 @@
 
 (provide (struct-out actor))
 (struct actor (name filmography)
-        #:transparent)
+  #:transparent)
 
 (provide load-actor)
 (define (load-actor filename)
   (match (call-with-input-file filename read)
     [`(actor ,name (filmography ,films ...))
-      (actor name (map make-movie films))]))
+     (actor name (map make-movie films))]))
 
 (provide write-actor)
 (define (write-actor name)
@@ -38,10 +38,10 @@
 (provide download-filmography)
 (define (download-filmography a [sleep-time 180])
   (for-each
-    (lambda (m)
-      (movie->file m)
-      (sleep sleep-time))
-    (actor-filmography a)))
+   (lambda (m)
+     (movie->file m)
+     (sleep sleep-time))
+   (actor-filmography a)))
 
 (module+ main
 

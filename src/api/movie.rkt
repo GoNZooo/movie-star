@@ -6,13 +6,13 @@
 
 (provide (struct-out movie))
 (struct movie (title year)
-        #:transparent)
+  #:transparent)
 
 (provide make-movie)
 (define (make-movie m)
   (match m
     [`(movie ,title ,year)
-      (movie title year)]))
+     (movie title year)]))
 
 (provide movie->file)
 (define (movie->file m)
